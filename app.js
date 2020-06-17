@@ -5,6 +5,9 @@ var path = require('path');
 var router = require('./routes/router');
 var app = express();
 var http = require('http').Server(app);
+var session=require('express-session')({secret:'key',saveUninitialized:false ,resave:true});
+
+app.use(session)
 
 
 // body parser middleware

@@ -1,46 +1,58 @@
 const express=require('express')
 const router=express.Router()
-const axios=require('axios')
+const axios=require('axios');
+const { request } = require('http');
 
-const token=null;
+var token=null;
 
 
+const redirectlogin = function(req, res, next){
+	if(req.session.token){
+		next()
+	}else{
+		res.redirect('/')
+	}
+}
 
 router.get('/',function(req,res){
-    res.render('index');
+    if(req.session.token){
+        res.render('home');
+    }
+    res.render('index',{error_msg:"",info_msg=""});
 })
 
-router.get('/register',function(req,res){
+router.get('/register',redirectlogin,function(req,res){
     res.render('register')
 })
 
-router.post('/register',(req,res)=>{
+router.post('/registration',(req,res)=>{
+    console.log(req.body)
     const hospitalData={
-        name:req.body.name,
-        password:req.body.password,
+        name:req.body.hospitalName,
         email:req.body.email,
-        coordLat:req.body.coordLat,
-        coordLong:req.body.coordLong
+        password:req.body.password,
+        openingTime:req.body.openingTime,
+        closingTime:req.body.closingTime,
+        coordLat:req.body.Latitude,
+        coordLong:req.body.longitude
     }
 
-    axios.get("http://localhost:8080",{
+    axios.post("http://localhost:5000/register",{
         params:{
             data:hospitalData
         }
     }).then(function(response){
-        if(response.Status_code=="OK")
+        //console.log(response)
+        if(response.data.status_code=="OK")
         {
-
-            window.localStorage.setItem('my_token',response.token);
-            res.json({ status: req.body.email+"registred"})
+            res.render('index',{error_msg:"",info_msg:"Registered Succesfully! Please Log in"})
         }
-        if(response.Status_code=="NOT OK")
+        if(response.data.status_code=="NOT OK")
         {
-            res.json("User Already Exist");
+            res.render('index',{error_msg:"",info_msg:"User Already Exist"})
         }
     })
 })
-
 
 
 router.post('/login',(req,res)=>{
@@ -49,23 +61,29 @@ router.post('/login',(req,res)=>{
         password:req.body.password
     }
 
+    
 
-    axios.get('http://localhost:8080',{
+    axios.post('http://localhost:5000/login',{
         params:{
             data:loginData
         }
     }).then(function(response){
-        if(response.Status_code)
+        if(response.data.status_code=="OK")
         {
-            window.localStorage.setItem('my_token',response.token);
-            res.send('successfull login');
+            req.session.token=response.data.token
+            res.render('home')
         }
         else
         {
-            res.send('wrond ID/Password');
+            res.render('index',{error_msg:"WrongID/Password"});
         }
     })
 
+})
+
+router.get('/logout',function(req,res){
+    req.session.destroy();
+    res.redirect('/');
 })
 
 module.exports = router;
