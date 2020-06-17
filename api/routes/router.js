@@ -115,13 +115,14 @@ router.post('/login',(req,res)=>{
 
 
 router.post('/addWitness',(req,res)=>{
+    console.log(req.body)
 const witnessData={
-    number:req.body.params.data.number,
-    name:req.body.params.data.name
+    number:req.body.number,
+    name:req.body.name
 }
 
     witness.findOne({
-        number:req.body.params.data.number
+        number:req.body.number
     }).then(currwitness=>{
         if(!currwitness)
         {
@@ -140,25 +141,25 @@ const witnessData={
 
 router.post('/postEmergency',(req,res)=>{
     const emergencyData={
-        number:req.body.params.data.number,
-        coordinates:[req.body.params.data.longitude,req.body.params.data.latitude],
-        description:req.body.params.data.description,
-        landmark:req.body.params.data.landmark
+        number:req.body.number,
+        coordinates:[req.body.coordLat,req.body.coordLong],
+        description:req.body.description,
+        landmark:req.body.landmark
     }
     let case_id;
     emergency.create(emergencyData).then(curr =>{
         case_id=curr._id
-        witness.update({number:req.body.params.data.number},{$push:{cases:curr._id}})
+        witness.update({number:req.body.number},{$push:{cases:curr._id}})
         res.json({status_code:"OK"})
     }).catch(err=>{
         res.json({status_code:"NOT OK"})
     })
     
     hospital.find({}).then(hospitals=>{
-        let curr=0,result=distanceInKmBetweenEarthCoordinates(hospitals[0].address[0].latitude,hospitals[0].address[0].longitude,req.body.params.data.latitude,req.body.params.data.longitude);
+        let curr=0,result=distanceInKmBetweenEarthCoordinates(hospitals[0].address[0].latitude,hospitals[0].address[0].longitude,req.body.coordLat,req.body.coordLong);
         for(i=1;i<hospitals.length();i++)
         {
-            if(result>distanceInKmBetweenEarthCoordinates(hospitals[0].address[0].latitude,hospitals[0].address[0].longitude,req.body.params.data.latitude,req.body.params.data.longitude))
+            if(result>distanceInKmBetweenEarthCoordinates(hospitals[0].address[0].latitude,hospitals[0].address[0].longitude,req.body.coordLat,req.body.coordLong))
             {
                 curr=i;
             }
