@@ -14,11 +14,15 @@ const redirectlogin = function(req, res, next){
 	}
 }
 
+router.get('/home',redirectlogin,function(req,res){
+    res.render('home',{hospital_name:req.session.data.name});
+})
+
 router.get('/',function(req,res){
     if(req.session.token){
-        res.render('home');
+        res.redirect('/home');
     }
-    res.render('index',{error_msg:"",info_msg=""});
+    res.render('index',{error_msg:"" , info_msg:""});
 })
 
 router.get('/register',redirectlogin,function(req,res){
@@ -71,11 +75,12 @@ router.post('/login',(req,res)=>{
         if(response.data.status_code=="OK")
         {
             req.session.token=response.data.token
-            res.render('home')
+            req.session.data=response.data.currData
+            res.redirect('/home')
         }
         else
         {
-            res.render('index',{error_msg:"WrongID/Password"});
+            res.render('index',{error_msg:"WrongID/Password",info_msg:""});
         }
     })
 

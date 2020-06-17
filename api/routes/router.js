@@ -64,6 +64,7 @@ router.post('/login',(req,res)=>{
                 })
                 res.json({
                     status_code:"OK",
+                    currData:payload,
                     token:token
                 })
             }
