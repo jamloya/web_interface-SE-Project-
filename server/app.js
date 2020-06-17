@@ -4,11 +4,14 @@ var bodyParser = require("body-parser");
 var path = require('path');
 var router = require('./routes/router');
 var app = express();
+var sharedsession = require("express-socket.io-session");
 var http = require('http').Server(app);
 var session=require('express-session')({secret:'key',saveUninitialized:false ,resave:true});
+var io = require('socket.io')(http);
+
 
 app.use(session)
-
+io.use(sharedsession(session))
 
 // body parser middleware
 app.use(bodyParser.json());
@@ -40,6 +43,16 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error', {status:err.status, message:err.message});
 });
+
+io.on('connection',function(socket){
+  let data="aasdd"
+  socket.on('getAlerts',function(){
+    console.log(data)
+    if(socket.handshake.session.token){
+      io.emit('getAlerts',data);
+    }
+  })
+})
 
 http.listen(8080, function(){
     console.log("server started at port 8080...");

@@ -10,4 +10,16 @@
 
     <%-include('partials/footer') -%>
 </body>
+<script src = "/socket.io/socket.io.js"></script>
+   
+   <script>
+      var socket = io();
+      socket.on('getAlerts',function(data){
+          console.log(data);
+      });
+      socket.emit('getAlerts');
+      setInterval(function(){
+            socket.emit('getAlerts');
+        }, 1000 * 3)
+   </script>
 </html>

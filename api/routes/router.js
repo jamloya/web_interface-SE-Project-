@@ -9,6 +9,28 @@ const hospital=require('../hospitalData.js').Hospital
 const witness=require('../hospitalData.js').Witness
 const emergency=require('../hospitalData.js').Emergency
 
+let emergencies=[]
+let it=-1;
+function degreesToRadians(degrees) {
+    return degrees * Math.PI / 180;
+  }
+  
+  function distanceInKmBetweenEarthCoordinates(lat1, lon1, lat2, lon2) {
+    var earthRadiusKm = 6371;
+  
+    var dLat = degreesToRadians(lat2-lat1);
+    var dLon = degreesToRadians(lon2-lon1);
+  
+    lat1 = degreesToRadians(lat1);
+    lat2 = degreesToRadians(lat2);
+  
+    var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    return earthRadiusKm * c;
+  }
+
+
 
 process.env.SECRET_KEY='jatin'
 
@@ -91,6 +113,7 @@ router.post('/login',(req,res)=>{
 })
 
 
+
 router.post('/addWitness',(req,res)=>{
 const witnessData={
     number:req.body.params.data.number,
@@ -122,13 +145,46 @@ router.post('/postEmergency',(req,res)=>{
         description:req.body.params.data.description,
         landmark:req.body.params.data.landmark
     }
+    let case_id;
     emergency.create(emergencyData).then(curr =>{
+        case_id=curr._id
         witness.update({number:req.body.params.data.number},{$push:{cases:curr._id}})
         res.json({status_code:"OK"})
     }).catch(err=>{
         res.json({status_code:"NOT OK"})
     })
     
+    hospital.find({}).then(hospitals=>{
+        let curr=0,result=distanceInKmBetweenEarthCoordinates(hospitals[0].address[0].latitude,hospitals[0].address[0].longitude,req.body.params.data.latitude,req.body.params.data.longitude);
+        for(i=1;i<hospitals.length();i++)
+        {
+            if(result>distanceInKmBetweenEarthCoordinates(hospitals[0].address[0].latitude,hospitals[0].address[0].longitude,req.body.params.data.latitude,req.body.params.data.longitude))
+            {
+                curr=i;
+            }
+        }
+        emergencies.push([case_id,hospitals[curr]._id,0])
+        it+=1;
+    })
+})
+
+router.get('/getAlerts',function(req,res){
+    let casesid=[]
+    for(i=it;i<emergencies.length();i++)
+    {
+        if(req.body.id==emergencies[i][1] && emergencies[i][2]==0)
+        {
+            emergencies[i][2]=1
+            casesid.push(emergencies[i][0]);
+        }
+    }
+    let cases=[]
+    casesid.forEach(element => {
+        emergency.findOne({_id:element}).then(curr=>{
+            cases.push(curr);
+        })
+    });
+    res.send(cases)
 })
 
 

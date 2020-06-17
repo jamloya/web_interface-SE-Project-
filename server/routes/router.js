@@ -3,7 +3,6 @@ const router=express.Router()
 const axios=require('axios');
 const { request } = require('http');
 
-var token=null;
 
 
 const redirectlogin = function(req, res, next){
@@ -90,5 +89,9 @@ router.get('/logout',function(req,res){
     req.session.destroy();
     res.redirect('/');
 })
+
+
+
+
 
 module.exports = router;
