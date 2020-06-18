@@ -8,8 +8,8 @@ var sharedsession = require("express-socket.io-session");
 var http = require('http').Server(app);
 var session=require('express-session')({secret:'key',saveUninitialized:false ,resave:true});
 var io = require('socket.io')(http);
-
-
+var axios=require('axios')
+ 
 app.use(session)
 io.use(sharedsession(session))
 
@@ -37,6 +37,7 @@ app.use(function(req, res, next) {
   next(err);
 });
 
+
 // error handler
 app.use(function(err, req, res, next) {
   // render the error page
@@ -45,11 +46,16 @@ app.use(function(err, req, res, next) {
 });
 
 io.on('connection',function(socket){
-  let data="aasdd"
   socket.on('getAlerts',function(){
-    console.log(data)
-    if(socket.handshake.session.token){
-      io.emit('getAlerts',data);
+    if(socket.handshake.session.token){  
+        axios.get('http://localhost:5000/emergencies',{
+          headers:{
+              authorization:socket.handshake.session.token
+          }
+      }).then(function(response){
+        //console.log(response)
+        io.emit('getAlerts',response.data);
+      })
     }
   })
 })

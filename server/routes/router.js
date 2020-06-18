@@ -14,8 +14,13 @@ const redirectlogin = function(req, res, next){
 }
 
 router.get('/home',redirectlogin,function(req,res){
-    res.render('home',{hospital_name:req.session.data.name});
+    
+    res.render('home',{hospital_name:req.session.data.name,coordLat:req.session.data.coordLat,coordLong:req.session.data.coordLong});
 })
+
+// router.get('/home',function(req,res){
+//     res.render('home',{hospital_name:"req.session.data.name"});
+// })
 
 router.get('/',function(req,res){
     if(req.session.token){
@@ -24,7 +29,7 @@ router.get('/',function(req,res){
     res.render('index',{error_msg:"" , info_msg:""});
 })
 
-router.get('/register',redirectlogin,function(req,res){
+router.get('/register',function(req,res){
     res.render('register')
 })
 
@@ -84,6 +89,8 @@ router.post('/login',(req,res)=>{
     })
 
 })
+
+
 
 router.get('/logout',function(req,res){
     req.session.destroy();
