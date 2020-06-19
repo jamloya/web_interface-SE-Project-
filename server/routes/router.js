@@ -33,6 +33,23 @@ router.get('/register',function(req,res){
     res.render('register')
 })
 
+
+router.post('/acceptRequest',(req,res)=>{
+    axios.post('http://localhost:5000/acceptRequest',{
+        headers:{
+            authorization:req.session.token
+        },
+        params:{
+        hospital_id:req.session.data._id,
+        link:req.body.link,
+        case_id:req.body.case_id
+        }
+    }).then(response=>{
+        res.send(response.data)
+    })
+})
+
+
 router.post('/registration',(req,res)=>{
     console.log(req.body)
     const hospitalData={
@@ -98,7 +115,20 @@ router.get('/logout',function(req,res){
 })
 
 
-
+router.post('/respond',(req,res)=>{
+    console.log(req.body)
+    axios.post('http://localhost:5000/respond',{
+        headers:{
+            authorization:req.session.token
+        },
+        params :
+        {
+            case_id:req.body.case_id
+        }
+    }).then(response=>{
+        res.send(response.data)
+    })
+})
 
 
 module.exports = router;

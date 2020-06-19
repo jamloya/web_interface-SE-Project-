@@ -54,7 +54,12 @@ io.on('connection',function(socket){
           }
       }).then(function(response){
         //console.log(response)
-        io.emit('getAlerts',response.data);
+        if(response.data.name=="TokenExpiredError")
+        {
+          io.emit('getAlerts',"");
+        }
+        else{
+        io.emit('getAlerts',response.data);}
       })
     }
   })
