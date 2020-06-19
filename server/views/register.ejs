@@ -122,6 +122,14 @@
 </body>
 <%- include ('partials/footer') -%>
 
-
+<script>
+   if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition);
+  } 
+  function showPosition(position) {
+  document.getElementById('lat').value= position.coords.latitude ;
+  document.getElementById('long').value= position.coords.longitude;
+}
+</script>
 
 </html>
